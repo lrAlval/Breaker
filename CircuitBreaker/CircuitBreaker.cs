@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace CircuitBreaker
 {
+    //TODO Add CircuitBreakerCommands with unique identifier for every service
     public class CircuitBreaker
     {
         public CircuitBreakerConfig Settings { get; set; }
@@ -57,39 +58,17 @@ namespace CircuitBreaker
             }
         }
 
-        public void Execute(Action action)
-        {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+        public void Execute(Action action) => _state.Execute(action.ThrowIfNull(nameof(action)));
 
-            _state.Execute(action);
-        }
+        public T Execute<T>(Func<T> func) => _state.Execute(func.ThrowIfNull(nameof(func)));
 
-        public T Execute<T>(Func<T> func)
-        {
-            if (func == null) throw new ArgumentNullException(nameof(func));
+        public Task ExecuteAsync(Func<Task> func) => _state.ExecuteAsync(func.ThrowIfNull(nameof(func)));
 
-            return _state.Execute(func);
-        }
+        public Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _state.ExecuteAsync(func.ThrowIfNull(nameof(func)));
 
-        public Task ExecuteAsync(Func<Task> func)
-        {
-            if (func == null) throw new ArgumentNullException(nameof(func));
-
-            return _state.InvokeAsync(func);
-        }
-
-        public Task<T> ExecuteAsync<T>(Func<Task<T>> func)
-        {
-            if (func == null) throw new ArgumentNullException(nameof(func));
-
-            return _state.InvokeAsync(func);
-        }
-
-        private void NotifyStateChange(CircuitBreakerState state) => this.OnStateChange?.Invoke(state);
+        private void NotifyStateChange(CircuitBreakerState state) => OnStateChange?.Invoke(state);
     }
 
-    public class CircuitBreakerException : Exception { }
-    public class CircuitBreakerExecutionException : CircuitBreakerException { }
     public class CircuitBreakerOpenException : Exception { }
     public class CircuitBreakerTimeoutException : Exception { }
 }

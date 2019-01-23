@@ -28,17 +28,17 @@ namespace CircuitBreaker.States
         {
             Interlocked.Increment(ref CircuitBreaker.FailureCount);
 
-            return IsThresholdReached() ? CircuitBreaker.TripToOpenState() : this;
+            return IsThresholdReached ? CircuitBreaker.TripToOpenState() : this;
         }
 
-        private bool IsThresholdReached() => CircuitBreaker.FailureCount == _maxFailures;
+        public override void Execute(Action action) => _invoker.InvokeThrough(this, action, _timeout);
 
-        public override void Invoke(Action action) => _invoker.InvokeThrough(this, action, _timeout);
+        public override T Execute<T>(Func<T> func) => _invoker.InvokeThrough(this, func, _timeout);
 
-        public override T Invoke<T>(Func<T> func) => _invoker.InvokeThrough(this, func, _timeout);
+        public override Task ExecuteAsync(Func<Task> func) => _invoker.InvokeThroughAsync(this, func, _timeout);
 
-        public override Task InvokeAsync(Func<Task> func) => _invoker.InvokeThrough(this, func, _timeout);
+        public override Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _invoker.InvokeThroughAsync(this, func, _timeout);
 
-        public override Task<T> InvokeAsync<T>(Func<Task<T>> func) => _invoker.InvokeThrough(this, func, _timeout);
+        private bool IsThresholdReached => CircuitBreaker.FailureCount == _maxFailures;
     }
 }

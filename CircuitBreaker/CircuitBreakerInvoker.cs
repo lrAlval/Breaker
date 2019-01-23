@@ -6,12 +6,7 @@ namespace CircuitBreaker
 {
     public class CircuitBreakerInvoker : ICircuitBreakerInvoker
     {
-        public void InvokeScheduled(Action action, TimeSpan interval)
-        {
-            if (action == null) throw new ArgumentNullException(nameof(action));
-
-            Task.Delay(interval).ContinueWith(_ => action());
-        }
+        public void InvokeScheduled(Action action, TimeSpan interval) => Task.Delay(interval).ContinueWith(_ => action());
 
         public void InvokeThrough(CircuitBreakerState state, Action action, TimeSpan timeout)
         {
@@ -41,44 +36,39 @@ namespace CircuitBreaker
             }
         }
 
-        public async Task InvokeThroughAsync(CircuitBreakerState state, Func<Task> func, TimeSpan timeout)
+        public Task InvokeThroughAsync(CircuitBreakerState state, Func<Task> func, TimeSpan timeout)
         {
             try
             {
-                await InvokeAsync(func, timeout);
+                var result = InvokeAsync(func, timeout);
+                state.InvocationSucceeds();
+                return result;
             }
             catch (Exception e)
             {
                 state.InvocationFails(e);
+                return Task.FromException(e);
             }
 
-            state.InvocationSucceeds();
         }
 
-        public async Task<T> InvokeThroughAsync<T>(CircuitBreakerState state, Func<Task<T>> func, TimeSpan timeout)
+        public Task<T> InvokeThroughAsync<T>(CircuitBreakerState state, Func<Task<T>> func, TimeSpan timeout)
         {
-            Task<T> task;
             try
             {
-                task = InvokeAsync(func, timeout);
-                await task;
+                var result = InvokeAsync(func.ThrowIfNull(nameof(func)), timeout);
+                state.InvocationSucceeds();
+                return result;
             }
             catch (Exception e)
             {
                 state.InvocationFails(e);
-                task = Task.FromCanceled<T>(new CancellationToken(true));
+                return Task.FromException<T>(e);
             }
-
-            state.InvocationSucceeds();
-
-            return await task;
         }
-
 
         private void Invoke(Action action, TimeSpan timeout)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
-
             var tokenSource = new CancellationTokenSource();
             var task = Task.Run(action, tokenSource.Token);
             if (task.IsCompleted || task.Wait((int)timeout.TotalMilliseconds, tokenSource.Token))
@@ -92,8 +82,6 @@ namespace CircuitBreaker
 
         private T Invoke<T>(Func<T> func, TimeSpan timeout)
         {
-            if (func == null) throw new ArgumentNullException(nameof(func));
-
             var tokenSource = new CancellationTokenSource();
             var task = Task.Run(func, tokenSource.Token);
             if (task.IsCompleted || task.Wait((int)timeout.TotalMilliseconds, tokenSource.Token))
@@ -104,26 +92,11 @@ namespace CircuitBreaker
             tokenSource.Cancel();
             throw new CircuitBreakerTimeoutException();
         }
+      
 
-        private Task InvokeAsync(Func<Task> func, TimeSpan timeout)
-        {
-            if (func == null) throw new ArgumentNullException(nameof(func));
+        private Task InvokeAsync(Func<Task> func, TimeSpan timeout) => Task.Run(func).TimeoutAfter(timeout);
 
-            return Task.Run(func).TimeoutAfter(timeout);
-        }
+        private Task<T> InvokeAsync<T>(Func<Task<T>> func, TimeSpan timeout) => Task.Run(func).TimeoutAfter(timeout);
 
-        private Task<T> InvokeAsync<T>(Func<Task<T>> func, TimeSpan timeout)
-        {
-            if (func == null) throw new ArgumentNullException(nameof(func));
-
-            return Task.Run(func).TimeoutAfter(timeout);
-        }
-
-        private Task<T> InvokeAsync<T>(Func<T> func, TimeSpan timeout)
-        {
-            if (func == null) throw new ArgumentNullException(nameof(func));
-
-            return Task.Run(func).TimeoutAfter(timeout);
-        }
     }
 }
