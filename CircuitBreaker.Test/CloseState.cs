@@ -1,16 +1,19 @@
 ﻿using FluentAssertions;
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace CircuitBreaker.Test
 {
+    [NonParallelizable]
+    [TestFixture]
     public class CloseState
     {
-        private readonly CircuitBreaker _circuitBreaker;
+        private CircuitBreaker _circuitBreaker;
 
-        public CloseState() => _circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig
+        [SetUp]
+        public void Init() => _circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig
         {
             ResetTimeOut = TimeSpan.FromMilliseconds(5),
             InvocationTimeOut = TimeSpan.FromMilliseconds(7),
@@ -18,7 +21,7 @@ namespace CircuitBreaker.Test
             SuccessThreshold = 1
         });
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenInvocationHappendOnCloseState_ThenItShouldCallTheMethod()
         {
             var volatileCodeWasCalled = false;
@@ -26,14 +29,14 @@ namespace CircuitBreaker.Test
             volatileCodeWasCalled.Should().BeTrue();
         }
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenInvocationSucceeds_ThenShouldRemainInCloseState()
         {
             _circuitBreaker.Execute(() => { });
             _circuitBreaker.IsClosed.Should().BeTrue();
         }
 
-        [Fact]
+        [Test]
         public async Task GivenInCloseState_WhenInvocationSucceedsWithReturnValue_ThenShouldRemainInCloseStateAsync()
         {
             var volatileCode = new { IsCalled = true, Name = "Test" };
@@ -42,7 +45,7 @@ namespace CircuitBreaker.Test
             response.IsCalled.Should().BeTrue();
         }
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenFailureThresholdIsReached_ThenShouldTripToOpenState()
         {
             var failuresThreshold = _circuitBreaker.Settings.FailuresThreshold;
@@ -53,14 +56,14 @@ namespace CircuitBreaker.Test
             _circuitBreaker.IsOpen.Should().BeTrue();
         }
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenTripToOpen_ThenShouldNotifyWithOpenState()
         {
             _circuitBreaker.TripToOpenState();
             _circuitBreaker.OnStateChange += state => (state is OpenState).Should().BeTrue();
         }
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenTripToOpen_ThenClose_ThenHalfClose_ItShouldNotifyThreeTimes()
         {
             var changeStateCount = 0;
@@ -86,7 +89,7 @@ namespace CircuitBreaker.Test
             changeStateCount.Should().Be(3);
         }
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenTripToOpen_ThenItShouldNotifyOnce()
         {
             var changeStateCount = 0;
@@ -99,7 +102,7 @@ namespace CircuitBreaker.Test
             changeStateCount.Should().Be(1);
         }
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenInvocationFails_ThenFailureCounterShouldIncrease()
         {
             _circuitBreaker.Execute(() => throw new Exception());
@@ -107,7 +110,7 @@ namespace CircuitBreaker.Test
             _circuitBreaker.FailureCount.Should().Be(1);
         }
 
-        [Fact]
+        [Test]
         public void GivenInCloseState_WhenInvocationSucceeds_ThenFailureCounterShouldRemainInZero()
         {
             _circuitBreaker.Execute(() => { });

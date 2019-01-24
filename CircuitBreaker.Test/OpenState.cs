@@ -1,15 +1,18 @@
 using FluentAssertions;
 using System;
 using System.Threading;
-using Xunit;
+using NUnit.Framework;
 
 namespace CircuitBreaker.Test
 {
+    [NonParallelizable]
+    [TestFixture]
     public class OpenState
     {
-        private readonly CircuitBreaker _circuitBreaker;
+        private  CircuitBreaker _circuitBreaker;
 
-        public OpenState()
+        [SetUp]
+        public void Init()
         {
             _circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig
             {
@@ -22,7 +25,7 @@ namespace CircuitBreaker.Test
             _circuitBreaker.TripToOpenState();
         }
 
-        [Fact]
+        [Test]
         public void GivenInOpenState_WhenInvoke_ItShouldFailFast()
         {
             var countInvocation = 0;
@@ -33,7 +36,7 @@ namespace CircuitBreaker.Test
             countInvocation.Should().Be(0);
         }
 
-        [Fact]
+        [Test]
         public void GivenInOpenState_WhenResetTimeOutPassed_ThenItShouldTripToHalfOpen()
         {
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
@@ -41,7 +44,7 @@ namespace CircuitBreaker.Test
             _circuitBreaker.IsHalfOpen.Should().BeTrue();
         }
 
-        [Fact]
+        [Test]
         public void GivenInOpenState_WhenTripToClose_ThenItShouldBeInCloseState()
         {
             _circuitBreaker.IsOpen.Should().BeTrue();
