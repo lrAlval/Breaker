@@ -4,7 +4,6 @@ using System;
 
 namespace CircuitBreaker.Test
 {
-    [NonParallelizable]
     [TestFixture]
     public class HalfOpenState
     {
@@ -25,6 +24,7 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
+        [NonParallelizable]
         public void GivenInHalfOpenState_WhenInvocationFails_ThenItShouldTripToOpen()
         {
             _circuitBreaker.Execute(() => throw new Exception());
@@ -32,6 +32,7 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
+        [NonParallelizable]
         public void GivenInHalfOpenState_WhenInvocationIsSuccessful_ThenItShouldTripToClose()
         {
             _circuitBreaker.Execute(() => { });
@@ -39,6 +40,7 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
+        [NonParallelizable]
         public void GivenInHalfOpenState_WhenInvocationIsSuccessful_ThenFailureCountShouldRemainInZero()
         {
             _circuitBreaker.Execute(() => { });

@@ -12,9 +12,7 @@ namespace CircuitBreaker
         public event Action<CircuitBreakerState> OnStateChange;
 
         private CircuitBreakerState _state;
-
-        private readonly object _lockObject = new object();
-
+        
         public int FailureCount;
         public int SuccessCount;
 
@@ -30,32 +28,23 @@ namespace CircuitBreaker
 
         public CircuitBreakerState TripToClosedState()
         {
-            lock (_lockObject)
-            {
-                _state = new ClosedState(this);
-                NotifyStateChange(_state);
-                return _state;
-            }
+            _state = new ClosedState(this);
+            NotifyStateChange(_state);
+            return _state;
         }
 
         public CircuitBreakerState TripToOpenState()
         {
-            lock (_lockObject)
-            {
-                _state = new OpenState(this);
-                NotifyStateChange(_state);
-                return _state;
-            }
+            _state = new OpenState(this);
+            NotifyStateChange(_state);
+            return _state;
         }
 
         public CircuitBreakerState TripToHalfOpenState()
         {
-            lock (_lockObject)
-            {
-                _state = new HalfOpenState(this);
-                NotifyStateChange(_state);
-                return _state;
-            }
+            _state = new HalfOpenState(this);
+            NotifyStateChange(_state);
+            return _state;
         }
 
         public void Execute(Action action) => _state.Execute(action.ThrowIfNull(nameof(action)));
