@@ -1,5 +1,6 @@
 language: csharp
 dist: xenial
+sudo: true
 mono: none
 dotnet: 2.1.503
 install:

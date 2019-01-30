@@ -21,8 +21,7 @@ namespace CircuitBreaker.Test
             TaskScheduler = TaskScheduler.Default
         });
 
-        [Test]
-        [NonParallelizable]
+        [Test]        
         public void GivenInCloseState_WhenInvocationHappendOnCloseState_ThenItShouldCallTheMethod()
         {
             var volatileCodeWasCalled = false;
@@ -31,7 +30,7 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
+        
         public void GivenInCloseState_WhenInvocationSucceeds_ThenShouldRemainInCloseState()
         {
             _circuitBreaker.Execute(() => { });
@@ -39,7 +38,6 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public async Task GivenInCloseState_WhenInvocationSucceedsWithReturnValue_ThenShouldRemainInCloseStateAsync()
         {
             var volatileCode = new { IsCalled = true, Name = "Test" };
@@ -49,7 +47,6 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInCloseState_WhenFailureThresholdIsReached_ThenShouldTripToOpenState()
         {
             var failuresThreshold = _circuitBreaker.Settings.FailuresThreshold;
@@ -61,15 +58,13 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInCloseState_WhenTripToOpen_ThenShouldNotifyWithOpenState()
         {
-            _circuitBreaker.TripToOpenState();
+            _circuitBreaker.TripTo(new States.OpenState(_circuitBreaker));
             _circuitBreaker.OnStateChange += state => (state is OpenState).Should().BeTrue();
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInCloseState_WhenTripToOpen_ThenClose_ThenHalfClose_ItShouldNotifyThreeTimes()
         {
             var changeStateCount = 0;
@@ -96,7 +91,6 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInCloseState_WhenTripToOpen_ThenItShouldNotifyOnce()
         {
             var changeStateCount = 0;
@@ -110,7 +104,6 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInCloseState_WhenInvocationFails_ThenFailureCounterShouldIncrease()
         {
             _circuitBreaker.Execute(() => throw new Exception());
@@ -119,7 +112,6 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInCloseState_WhenInvocationSucceeds_ThenFailureCounterShouldRemainInZero()
         {
             _circuitBreaker.Execute(() => { });

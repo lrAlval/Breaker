@@ -2,6 +2,7 @@ using FluentAssertions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CircuitBreaker.States;
 using NUnit.Framework;
 
 namespace CircuitBreaker.Test
@@ -23,11 +24,11 @@ namespace CircuitBreaker.Test
                 TaskScheduler = TaskScheduler.Default
             });
 
-            _circuitBreaker.TripToOpenState();
+            _circuitBreaker.TripTo(new States.OpenState(_circuitBreaker));
+
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInOpenState_WhenInvoke_ItShouldFailFast()
         {
             var countInvocation = 0;
@@ -39,7 +40,6 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInOpenState_WhenResetTimeOutPassed_ThenItShouldTripToHalfOpen()
         {
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
@@ -48,11 +48,10 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        [NonParallelizable]
         public void GivenInOpenState_WhenTripToClose_ThenItShouldBeInCloseState()
         {
             _circuitBreaker.IsOpen.Should().BeTrue();
-            _circuitBreaker.TripToClosedState();
+            _circuitBreaker.TripTo(new ClosedState(_circuitBreaker));
             _circuitBreaker.IsClosed.Should().BeTrue();
         }
     }

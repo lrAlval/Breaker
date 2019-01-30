@@ -15,20 +15,18 @@ namespace CircuitBreaker.States
             _invoker = new CircuitBreakerInvoker(CircuitBreaker.Settings.TaskScheduler);
             _maxFailures = CircuitBreaker.Settings.FailuresThreshold;
             _timeout = CircuitBreaker.Settings.InvocationTimeOut;
-            CircuitBreaker.FailureCount = 0;
         }
 
-        public override CircuitBreakerState InvocationSucceeds()
-        {
-            CircuitBreaker.FailureCount = 0;
-            return this;
-        }
+        public override void OnEnter() => CircuitBreaker.FailureCount = 0;
 
-        public override CircuitBreakerState InvocationFails(Exception e)
-        {
-            Interlocked.Increment(ref CircuitBreaker.FailureCount);
+        public override void InvocationSucceeds() => CircuitBreaker.FailureCount = 0;
 
-            return IsThresholdReached ? CircuitBreaker.TripToOpenState() : this;
+        public override void InvocationFails(Exception e)
+        {
+            if (IsThresholdReached)
+            {
+                CircuitBreaker.TripTo(new OpenState(CircuitBreaker));
+            }
         }
 
         public override void Execute(Action action) => _invoker.InvokeThrough(this, action, _timeout);
@@ -39,6 +37,6 @@ namespace CircuitBreaker.States
 
         public override Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _invoker.InvokeThroughAsync(this, func, _timeout);
 
-        private bool IsThresholdReached => CircuitBreaker.FailureCount == _maxFailures;
+        private bool IsThresholdReached => Interlocked.Increment(ref CircuitBreaker.FailureCount) == _maxFailures;
     }
 }

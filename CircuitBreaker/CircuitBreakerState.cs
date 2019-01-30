@@ -8,10 +8,12 @@ namespace CircuitBreaker
         protected readonly CircuitBreaker CircuitBreaker;
 
         protected CircuitBreakerState(CircuitBreaker circuitBreaker) => CircuitBreaker = circuitBreaker;
-        
-        public virtual CircuitBreakerState InvocationSucceeds() => this;
 
-        public virtual CircuitBreakerState InvocationFails(Exception e) => this;
+        public abstract void OnEnter();
+
+        public virtual void InvocationSucceeds() { }
+
+        public virtual void InvocationFails(Exception e) { }
 
         public abstract void Execute(Action action);
         public abstract T Execute<T>(Func<T> func);

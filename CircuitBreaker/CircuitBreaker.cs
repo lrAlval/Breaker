@@ -1,5 +1,6 @@
 ﻿using CircuitBreaker.States;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CircuitBreaker
@@ -9,53 +10,52 @@ namespace CircuitBreaker
     {
         public CircuitBreakerConfig Settings { get; set; }
 
-        public event Action<CircuitBreakerState> OnStateChange;
-
-        private CircuitBreakerState _state;
-        
         public int FailureCount;
         public int SuccessCount;
 
-        public bool IsClosed => _state is ClosedState;
-        public bool IsOpen => _state is OpenState;
-        public bool IsHalfOpen => _state is HalfOpenState;
+        public event Action<CircuitBreakerState> OnStateChange;
+
+        private CircuitBreakerState _currentState;
+
+        public bool IsClosed => _currentState is ClosedState;
+        public bool IsOpen => _currentState is OpenState;
+        public bool IsHalfOpen => _currentState is HalfOpenState;
 
         public CircuitBreaker(CircuitBreakerConfig settings)
         {
             Settings = settings;
-            _state = new ClosedState(this);
+            _currentState = new ClosedState(this);
+            _currentState.OnEnter();
         }
 
-        public CircuitBreakerState TripToClosedState()
+        public void TripTo(CircuitBreakerState to)
         {
-            _state = new ClosedState(this);
-            NotifyStateChange(_state);
-            return _state;
+            if (TryToTrip(_currentState, to))
+            {
+                NotifyStateChange();
+            }
         }
 
-        public CircuitBreakerState TripToOpenState()
+        private bool TryToTrip(CircuitBreakerState from, CircuitBreakerState to)
         {
-            _state = new OpenState(this);
-            NotifyStateChange(_state);
-            return _state;
+            if (Interlocked.CompareExchange(ref _currentState, to, from) == from)
+            {
+                to.OnEnter();
+                return true;
+            }
+
+            return false;
         }
 
-        public CircuitBreakerState TripToHalfOpenState()
-        {
-            _state = new HalfOpenState(this);
-            NotifyStateChange(_state);
-            return _state;
-        }
+        public void Execute(Action action) => _currentState.Execute(action.ThrowIfNull(nameof(action)));
 
-        public void Execute(Action action) => _state.Execute(action.ThrowIfNull(nameof(action)));
+        public T Execute<T>(Func<T> func) => _currentState.Execute(func.ThrowIfNull(nameof(func)));
 
-        public T Execute<T>(Func<T> func) => _state.Execute(func.ThrowIfNull(nameof(func)));
+        public Task ExecuteAsync(Func<Task> func) => _currentState.ExecuteAsync(func.ThrowIfNull(nameof(func)));
 
-        public Task ExecuteAsync(Func<Task> func) => _state.ExecuteAsync(func.ThrowIfNull(nameof(func)));
+        public Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _currentState.ExecuteAsync(func.ThrowIfNull(nameof(func)));
 
-        public Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _state.ExecuteAsync(func.ThrowIfNull(nameof(func)));
-
-        private void NotifyStateChange(CircuitBreakerState state) => OnStateChange?.Invoke(state);
+        private void NotifyStateChange() => OnStateChange?.Invoke(_currentState);
     }
 
     public class CircuitBreakerOpenException : Exception { }

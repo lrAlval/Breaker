@@ -7,7 +7,9 @@ namespace CircuitBreaker.States
     {
         public OpenState(CircuitBreaker circuitBreaker) : base(circuitBreaker) =>
             new CircuitBreakerInvoker(CircuitBreaker.Settings.TaskScheduler)
-                .InvokeScheduled(() => CircuitBreaker.TripToHalfOpenState(), CircuitBreaker.Settings.ResetTimeOut);
+                .InvokeScheduled(() => CircuitBreaker.TripTo(new HalfOpenState(CircuitBreaker)), CircuitBreaker.Settings.ResetTimeOut);
+
+        public override void OnEnter() => CircuitBreaker.SuccessCount = 0;
 
         public override void Execute(Action action) => throw new CircuitBreakerOpenException();
         public override T Execute<T>(Func<T> func) => throw new CircuitBreakerOpenException();
