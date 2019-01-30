@@ -41,7 +41,7 @@ namespace CircuitBreaker.Test
         public async Task GivenInCloseState_WhenInvocationSucceedsWithReturnValue_ThenShouldRemainInCloseStateAsync()
         {
             var volatileCode = new { IsCalled = true, Name = "Test" };
-            var response = await _circuitBreaker.Execute(() => Task.FromResult(volatileCode));
+            var response = await _circuitBreaker.ExecuteAsync(() => Task.FromResult(volatileCode));
             _circuitBreaker.IsClosed.Should().BeTrue();
             response.IsCalled.Should().BeTrue();
         }

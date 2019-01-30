@@ -3,7 +3,12 @@ dist: xenial
 sudo: true
 mono: none
 dotnet: 2.1.503
-install:
-- dotnet restore
-script:
-  - dotnet build
+
+jobs:
+  include:
+    - stage: Build
+      script: 
+        - dotnet build   
+    - stage: Unit Tests
+      script:
+        - dotnet test

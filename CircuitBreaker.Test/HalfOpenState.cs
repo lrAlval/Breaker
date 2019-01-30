@@ -15,8 +15,8 @@ namespace CircuitBreaker.Test
         {
             _circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig
             {
-                ResetTimeOut = TimeSpan.FromMilliseconds(5),
-                InvocationTimeOut = TimeSpan.FromMilliseconds(7),
+                ResetTimeOut = TimeSpan.FromMilliseconds(15),
+                InvocationTimeOut = TimeSpan.FromMilliseconds(18),
                 FailuresThreshold = 1,
                 SuccessThreshold = 1,
                 TaskScheduler = TaskScheduler.Default
@@ -35,8 +35,10 @@ namespace CircuitBreaker.Test
         [Test]
         public void GivenInHalfOpenState_WhenInvocationIsSuccessful_ThenItShouldTripToClose()
         {
-            _circuitBreaker.Execute(() => { });
+            var volatileCodeWasCalled = false;
+            _circuitBreaker.Execute(() => { volatileCodeWasCalled = true; });
             _circuitBreaker.IsClosed.Should().BeTrue();
+            volatileCodeWasCalled.Should().BeTrue();
         }
 
         [Test]

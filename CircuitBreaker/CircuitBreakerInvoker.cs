@@ -40,41 +40,40 @@ namespace CircuitBreaker
             }
         }
 
-        public Task InvokeThroughAsync(CircuitBreakerState state, Func<Task> func, TimeSpan timeout)
+        public async Task InvokeThroughAsync(CircuitBreakerState state, Func<Task> func, TimeSpan timeout)
         {
             try
             {
-                var result = InvokeAsync(func, timeout);
+                await InvokeAsync(func, timeout);
                 state.InvocationSucceeds();
-                return result;
             }
             catch (Exception e)
             {
                 state.InvocationFails(e);
-                return Task.FromException(e);
+                //await Task.FromException(e);
             }
 
         }
 
-        public Task<T> InvokeThroughAsync<T>(CircuitBreakerState state, Func<Task<T>> func, TimeSpan timeout)
+        public async Task<T> InvokeThroughAsync<T>(CircuitBreakerState state, Func<Task<T>> func, TimeSpan timeout)
         {
             try
             {
-                var result = InvokeAsync(func.ThrowIfNull(nameof(func)), timeout);
+                var result = await InvokeAsync(func, timeout);
                 state.InvocationSucceeds();
                 return result;
             }
             catch (Exception e)
             {
                 state.InvocationFails(e);
-                return Task.FromException<T>(e);
+                 return await Task.FromException<T>(e);
             }
         }
 
         private void Invoke(Action action, TimeSpan timeout)
         {
             var tokenSource = new CancellationTokenSource();
-            var task = Schedule(action, _customTaskScheduler, tokenSource.Token);
+            var task = Schedule(action, tokenSource.Token);
             if (task.IsCompleted || task.Wait((int)timeout.TotalMilliseconds, tokenSource.Token))
             {
                 return;
@@ -87,7 +86,7 @@ namespace CircuitBreaker
         private T Invoke<T>(Func<T> func, TimeSpan timeout)
         {
             var tokenSource = new CancellationTokenSource();
-            var task = Schedule(func, _customTaskScheduler, tokenSource.Token);
+            var task = Schedule(func, tokenSource.Token);
             if (task.IsCompleted || task.Wait((int)timeout.TotalMilliseconds, tokenSource.Token))
             {
                 return task.Result;
@@ -97,15 +96,14 @@ namespace CircuitBreaker
             throw new CircuitBreakerTimeoutException();
         }
 
-        private Task InvokeAsync(Func<Task> func, TimeSpan timeout) => Schedule(func, _customTaskScheduler).Unwrap().TimeoutAfter(timeout);
+        private Task InvokeAsync(Func<Task> func, TimeSpan timeout) => Schedule(func).Unwrap().TimeoutAfter(timeout);
 
-        private Task<T> InvokeAsync<T>(Func<Task<T>> func, TimeSpan timeout) => Schedule(func, _customTaskScheduler).Unwrap().TimeoutAfter(timeout);
+        private Task<T> InvokeAsync<T>(Func<Task<T>> func, TimeSpan timeout) => Schedule(func).Unwrap().TimeoutAfter(timeout);
 
-        private Task<T> Schedule<T>(Func<T> func, TaskScheduler scheduler, CancellationToken cancellationToken = default(CancellationToken))
-            => Task.Factory.StartNew(func, cancellationToken, TaskCreationOptions.DenyChildAttach, scheduler);
+        private Task<T> Schedule<T>(Func<T> func, CancellationToken cancellationToken = default(CancellationToken))
+            => Task.Factory.StartNew(func, cancellationToken, TaskCreationOptions.DenyChildAttach, _customTaskScheduler);
 
-        private Task Schedule(Action action, TaskScheduler scheduler, CancellationToken cancellationToken = default(CancellationToken))
-            => Task.Factory.StartNew(action, cancellationToken, TaskCreationOptions.DenyChildAttach, scheduler);
-
+        private Task Schedule(Action action, CancellationToken cancellationToken = default(CancellationToken))
+            => Task.Factory.StartNew(action, cancellationToken, TaskCreationOptions.DenyChildAttach, _customTaskScheduler);
     }
 }
