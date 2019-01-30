@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using System;
+using System.Threading.Tasks;
 
 namespace CircuitBreaker.Test
 {
@@ -17,7 +18,8 @@ namespace CircuitBreaker.Test
                 ResetTimeOut = TimeSpan.FromMilliseconds(5),
                 InvocationTimeOut = TimeSpan.FromMilliseconds(7),
                 FailuresThreshold = 1,
-                SuccessThreshold = 1
+                SuccessThreshold = 1,
+                TaskScheduler = TaskScheduler.Default
             });
 
             _circuitBreaker.TripToHalfOpenState();

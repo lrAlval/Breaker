@@ -12,7 +12,7 @@ namespace CircuitBreaker.States
 
         public ClosedState(CircuitBreaker circuitBreaker) : base(circuitBreaker)
         {
-            _invoker = new CircuitBreakerInvoker();
+            _invoker = new CircuitBreakerInvoker(CircuitBreaker.Settings.TaskScheduler);
             _maxFailures = CircuitBreaker.Settings.FailuresThreshold;
             _timeout = CircuitBreaker.Settings.InvocationTimeOut;
             CircuitBreaker.FailureCount = 0;

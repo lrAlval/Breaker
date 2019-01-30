@@ -17,7 +17,8 @@ namespace CircuitBreaker.Test
             ResetTimeOut = TimeSpan.FromMilliseconds(5),
             InvocationTimeOut = TimeSpan.FromMilliseconds(7),
             FailuresThreshold = 2,
-            SuccessThreshold = 1
+            SuccessThreshold = 1,
+            TaskScheduler = TaskScheduler.Default
         });
 
         [Test]

@@ -13,7 +13,7 @@ namespace CircuitBreaker.States
         {
             CircuitBreaker.SuccessCount = 0;
             _timeout = CircuitBreaker.Settings.InvocationTimeOut;
-            _invoker = new CircuitBreakerInvoker();
+            _invoker = new CircuitBreakerInvoker(CircuitBreaker.Settings.TaskScheduler);
         }
 
         public override CircuitBreakerState InvocationSucceeds()

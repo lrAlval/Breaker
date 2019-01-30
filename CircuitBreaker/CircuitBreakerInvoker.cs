@@ -6,6 +6,10 @@ namespace CircuitBreaker
 {
     public class CircuitBreakerInvoker : ICircuitBreakerInvoker
     {
+        private readonly TaskScheduler _customTaskScheduler;
+
+        public CircuitBreakerInvoker(TaskScheduler taskScheduler) => _customTaskScheduler = taskScheduler;
+
         public void InvokeScheduled(Action action, TimeSpan interval) => Task.Delay(interval).ContinueWith(_ => action());
 
         public void InvokeThrough(CircuitBreakerState state, Action action, TimeSpan timeout)
@@ -70,7 +74,7 @@ namespace CircuitBreaker
         private void Invoke(Action action, TimeSpan timeout)
         {
             var tokenSource = new CancellationTokenSource();
-            var task = Task.Run(action, tokenSource.Token);
+            var task = Schedule(action, _customTaskScheduler, tokenSource.Token);
             if (task.IsCompleted || task.Wait((int)timeout.TotalMilliseconds, tokenSource.Token))
             {
                 return;
@@ -83,7 +87,7 @@ namespace CircuitBreaker
         private T Invoke<T>(Func<T> func, TimeSpan timeout)
         {
             var tokenSource = new CancellationTokenSource();
-            var task = Task.Run(func, tokenSource.Token);
+            var task = Schedule(func, _customTaskScheduler, tokenSource.Token);
             if (task.IsCompleted || task.Wait((int)timeout.TotalMilliseconds, tokenSource.Token))
             {
                 return task.Result;
@@ -92,11 +96,16 @@ namespace CircuitBreaker
             tokenSource.Cancel();
             throw new CircuitBreakerTimeoutException();
         }
-      
 
-        private Task InvokeAsync(Func<Task> func, TimeSpan timeout) => Task.Run(func).TimeoutAfter(timeout);
+        private Task InvokeAsync(Func<Task> func, TimeSpan timeout) => Schedule(func, _customTaskScheduler).Unwrap().TimeoutAfter(timeout);
 
-        private Task<T> InvokeAsync<T>(Func<Task<T>> func, TimeSpan timeout) => Task.Run(func).TimeoutAfter(timeout);
+        private Task<T> InvokeAsync<T>(Func<Task<T>> func, TimeSpan timeout) => Schedule(func, _customTaskScheduler).Unwrap().TimeoutAfter(timeout);
+
+        private Task<T> Schedule<T>(Func<T> func, TaskScheduler scheduler, CancellationToken cancellationToken = default(CancellationToken))
+            => Task.Factory.StartNew(func, cancellationToken, TaskCreationOptions.DenyChildAttach, scheduler);
+
+        private Task Schedule(Action action, TaskScheduler scheduler, CancellationToken cancellationToken = default(CancellationToken))
+            => Task.Factory.StartNew(action, cancellationToken, TaskCreationOptions.DenyChildAttach, scheduler);
 
     }
 }
