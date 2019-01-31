@@ -21,7 +21,7 @@ namespace CircuitBreaker.States
 
         public override void InvocationSucceeds()
         {
-            if (IsSuccessThresholdReached)
+            if (SuccessThresholdReached())
             {
                 CircuitBreaker.TripTo(new ClosedState(CircuitBreaker));
             }
@@ -37,6 +37,6 @@ namespace CircuitBreaker.States
 
         public override Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _invoker.InvokeThroughAsync(this, func, _timeout);
 
-        private bool IsSuccessThresholdReached => Interlocked.Increment(ref CircuitBreaker.SuccessCount) == _successThreshold;
+        private bool SuccessThresholdReached() => Interlocked.Increment(ref CircuitBreaker.SuccessCount) == _successThreshold;
     }
 }

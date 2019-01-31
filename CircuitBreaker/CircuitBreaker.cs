@@ -8,12 +8,11 @@ namespace CircuitBreaker
     //TODO Add CircuitBreakerCommands with unique identifier for every service
     public class CircuitBreaker
     {
-        public CircuitBreakerConfig Settings { get; set; }
+        public event Action<CircuitBreakerState> OnStateChange;
 
+        public CircuitBreakerConfig Settings;
         public int FailureCount;
         public int SuccessCount;
-
-        public event Action<CircuitBreakerState> OnStateChange;
 
         private CircuitBreakerState _currentState;
 
@@ -59,5 +58,8 @@ namespace CircuitBreaker
     }
 
     public class CircuitBreakerOpenException : Exception { }
-    public class CircuitBreakerTimeoutException : Exception { }
+    public class CircuitBreakerTimeoutException : Exception
+    {
+        public CircuitBreakerTimeoutException(string message = "The operation has timed out.") : base(message) { }
+    }
 }

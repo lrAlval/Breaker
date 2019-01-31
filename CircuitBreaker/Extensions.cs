@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CircuitBreaker
@@ -7,18 +8,34 @@ namespace CircuitBreaker
     {
         public static async Task<TResult> TimeoutAfter<TResult>(this Task<TResult> task, TimeSpan timeout)
         {
-            if (task == await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false))
-                return await task.ConfigureAwait(false);
+            using (var timeoutCancellationTokenSource = new CancellationTokenSource())
+            {
+                var completedTask = await Task.WhenAny(task, Task.Delay(timeout, timeoutCancellationTokenSource.Token));
+                if (completedTask == task)
+                {
+                    timeoutCancellationTokenSource.Cancel();
+                    return await task.ConfigureAwait(false);
+                }
 
-            throw new CircuitBreakerTimeoutException();
+                throw new CircuitBreakerTimeoutException();
+            }
         }
 
         public static async Task TimeoutAfter(this Task task, TimeSpan timeout)
         {
-            if (task == await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false))
-                await task.ConfigureAwait(false);
-
-            throw new CircuitBreakerTimeoutException();
+            using (var timeoutCancellationTokenSource = new CancellationTokenSource())
+            {
+                var completedTask = await Task.WhenAny(task, Task.Delay(timeout, timeoutCancellationTokenSource.Token));
+                if (completedTask == task)
+                {
+                    timeoutCancellationTokenSource.Cancel();
+                    await task.ConfigureAwait(false);
+                }
+                else
+                {
+                    throw new CircuitBreakerTimeoutException();
+                }
+            }
         }
 
         public static T ThrowIfNull<T>(this T argument, string argumentName)

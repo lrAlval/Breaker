@@ -1,51 +1,28 @@
 ﻿using FluentAssertions;
+using NSubstitute;
 using NUnit.Framework;
 using System;
-using System.Threading.Tasks;
+using CircuitBreaker.Test.Fixtures;
 
 namespace CircuitBreaker.Test
 {
-    [TestFixture]
-    public class HalfOpenState
+    public class HalfOpenState : CircuitBreakerStateFixture
     {
-        private CircuitBreaker _circuitBreaker;
+        public override CircuitBreakerState InitialState() => new States.HalfOpenState(CircuitBreaker);
 
-        [SetUp]
-        public void Init()
+        [Test]
+        public void WhenInvocationFails_ThenItShouldTripToOpen()
         {
-            _circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig
-            {
-                ResetTimeOut = TimeSpan.FromMilliseconds(15),
-                InvocationTimeOut = TimeSpan.FromMilliseconds(18),
-                FailuresThreshold = 1,
-                SuccessThreshold = 1,
-                TaskScheduler = TaskScheduler.Default
-            });
-
-            _circuitBreaker.TripTo(new States.HalfOpenState(_circuitBreaker));
+            CurrentState.InvocationFails(Arg.Any<Exception>());
+            CurrentState.InvocationFails(Arg.Any<Exception>());
+            CircuitBreaker.IsOpen.Should().BeTrue();
         }
 
         [Test]
-        public void GivenInHalfOpenState_WhenInvocationFails_ThenItShouldTripToOpen()
+        public void WhenInvocationIsSuccessful_ThenItShouldTripToClose()
         {
-            _circuitBreaker.Execute(() => throw new Exception());
-            _circuitBreaker.IsOpen.Should().BeTrue();
-        }
-
-        [Test]
-        public void GivenInHalfOpenState_WhenInvocationIsSuccessful_ThenItShouldTripToClose()
-        {
-            var volatileCodeWasCalled = false;
-            _circuitBreaker.Execute(() => { volatileCodeWasCalled = true; });
-            _circuitBreaker.IsClosed.Should().BeTrue();
-            volatileCodeWasCalled.Should().BeTrue();
-        }
-
-        [Test]
-        public void GivenInHalfOpenState_WhenInvocationIsSuccessful_ThenFailureCountShouldRemainInZero()
-        {
-            _circuitBreaker.Execute(() => { });
-            _circuitBreaker.FailureCount.Should().Be(0);
+            CurrentState.InvocationSucceeds();
+            CircuitBreaker.IsClosed.Should().BeTrue();
         }
     }
 }

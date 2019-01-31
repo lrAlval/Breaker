@@ -23,7 +23,7 @@ namespace CircuitBreaker.States
 
         public override void InvocationFails(Exception e)
         {
-            if (IsThresholdReached)
+            if (FailureThresholdReached())
             {
                 CircuitBreaker.TripTo(new OpenState(CircuitBreaker));
             }
@@ -37,6 +37,6 @@ namespace CircuitBreaker.States
 
         public override Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _invoker.InvokeThroughAsync(this, func, _timeout);
 
-        private bool IsThresholdReached => Interlocked.Increment(ref CircuitBreaker.FailureCount) == _maxFailures;
+        private bool FailureThresholdReached() => Interlocked.Increment(ref CircuitBreaker.FailureCount) == _maxFailures;
     }
 }

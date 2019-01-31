@@ -4,7 +4,7 @@ sudo: true
 mono: none
 dotnet: 2.1.503
 
-jobs:
+matrix:
   include:
     - stage: Build
       script: 
