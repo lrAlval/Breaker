@@ -1,6 +1,6 @@
 # Breaker.Net
 ## Build status
-[![Build Status](https://travis-ci.org/lrAlval/CircuitBreaker.svg?branch=master)](https://travis-ci.org/lrAlval/CircuitBreaker)
+[![Build Status](https://travis-ci.org/lrAlval/Breaker.svg?branch=master)](https://travis-ci.org/lrAlval/CircuitBreaker)
 ## Overview
 
 `Breaker.Net` is an implementation of the Circuit Breaker pattern for .NET with zero dependencies.
