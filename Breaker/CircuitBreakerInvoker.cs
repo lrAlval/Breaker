@@ -6,9 +6,16 @@ namespace CircuitBreaker
 {
     public class CircuitBreakerInvoker : ICircuitBreakerInvoker
     {
+        private readonly CircuitBreakerState _currentState;
         private readonly TaskScheduler _customTaskScheduler;
+        private readonly TimeSpan _timeout;
 
-        public CircuitBreakerInvoker(TaskScheduler taskScheduler) => _customTaskScheduler = taskScheduler;
+        public CircuitBreakerInvoker(CircuitBreakerState state, TaskScheduler taskScheduler, TimeSpan timeout)
+        {
+            _currentState = state;
+            _customTaskScheduler = taskScheduler;
+            _timeout = timeout;
+        }
 
         public void InvokeScheduled(Action action, TimeSpan interval)
         {
@@ -16,59 +23,67 @@ namespace CircuitBreaker
             timer = new Timer(_ => { action(); timer.Dispose(); }, null, (int)interval.TotalMilliseconds, Timeout.Infinite);
         }
 
-        public void InvokeThrough(CircuitBreakerState state, Action action, TimeSpan timeout)
+        public void InvokeThrough(Action action)
         {
             try
             {
-                Invoke(action, timeout);
-                state.InvocationSucceeds();
+                Invoke(action, _timeout);
+
+                _currentState.InvocationSucceeds();
             }
             catch (Exception e)
             {
-                state.InvocationFails(e);
+                _currentState.InvocationFails(e);
             }
         }
 
-        public T InvokeThrough<T>(CircuitBreakerState state, Func<T> func, TimeSpan timeout)
+        public T InvokeThrough<T>(Func<T> func)
         {
             try
             {
-                var result = Invoke(func, timeout);
-                state.InvocationSucceeds();
+                var result = Invoke(func, _timeout);
+
+                _currentState.InvocationSucceeds();
+
                 return result;
             }
             catch (Exception e)
             {
-                state.InvocationFails(e);
-                return default(T);
+                _currentState.InvocationFails(e);
+
+                return default;
             }
         }
 
-        public async Task InvokeThroughAsync(CircuitBreakerState state, Func<Task> func, TimeSpan timeout)
+        public async Task InvokeThroughAsync(Func<Task> func)
         {
             try
             {
-                await InvokeAsync(func, timeout);
-                state.InvocationSucceeds();
+                await InvokeAsync(func, _timeout);
+
+                _currentState.InvocationSucceeds();
             }
             catch (Exception e)
             {
-                state.InvocationFails(e);
+                _currentState.InvocationFails(e);
             }
 
         }
 
-        public async Task<T> InvokeThroughAsync<T>(CircuitBreakerState state, Func<Task<T>> func, TimeSpan timeout)
+        public async Task<T> InvokeThroughAsync<T>(Func<Task<T>> func)
         {
             try
             {
-                var result = await InvokeAsync(func, timeout);
-                state.InvocationSucceeds();
+                var result = await InvokeAsync(func, _timeout);
+
+                _currentState.InvocationSucceeds();
+
                 return result;
             }
             catch (Exception e)
             {
-                state.InvocationFails(e);
+                _currentState.InvocationFails(e);
+
                 return await Task.FromException<T>(e);
             }
         }
@@ -81,7 +96,7 @@ namespace CircuitBreaker
 
         private Task<T> InvokeAsync<T>(Func<Task<T>> func, TimeSpan timeout) => Schedule(func).Unwrap().TimeoutAfter(timeout);
 
-        private Task<T> Schedule<T>(Func<T> func, CancellationToken cancellationToken = default(CancellationToken))
+        private Task<T> Schedule<T>(Func<T> func, CancellationToken cancellationToken = default)
             => Task.Factory.StartNew(func, cancellationToken, TaskCreationOptions.DenyChildAttach, _customTaskScheduler);
 
         private Task Schedule(Action action, CancellationToken cancellationToken = default)

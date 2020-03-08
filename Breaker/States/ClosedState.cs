@@ -12,9 +12,9 @@ namespace CircuitBreaker.States
 
         public ClosedState(CircuitBreaker circuitBreaker) : base(circuitBreaker)
         {
-            _invoker = new CircuitBreakerInvoker(CircuitBreaker.Settings.TaskScheduler);
             _maxFailures = CircuitBreaker.Settings.FailuresThreshold;
             _timeout = CircuitBreaker.Settings.InvocationTimeOut;
+            _invoker = new CircuitBreakerInvoker(this, CircuitBreaker.Settings.TaskScheduler, _timeout);
         }
 
         public override void OnEnter() => CircuitBreaker.FailureCount = 0;
@@ -29,13 +29,13 @@ namespace CircuitBreaker.States
             }
         }
 
-        public override void Execute(Action action) => _invoker.InvokeThrough(this, action, _timeout);
+        public override void Execute(Action action) => _invoker.InvokeThrough(action);
 
-        public override T Execute<T>(Func<T> func) => _invoker.InvokeThrough(this, func, _timeout);
+        public override T Execute<T>(Func<T> func) => _invoker.InvokeThrough(func);
 
-        public override Task ExecuteAsync(Func<Task> func) => _invoker.InvokeThroughAsync(this, func, _timeout);
+        public override Task ExecuteAsync(Func<Task> func) => _invoker.InvokeThroughAsync(func);
 
-        public override Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _invoker.InvokeThroughAsync(this, func, _timeout);
+        public override Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _invoker.InvokeThroughAsync(func);
 
         private bool FailureThresholdReached() => Interlocked.Increment(ref CircuitBreaker.FailureCount) == _maxFailures;
     }

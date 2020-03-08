@@ -28,14 +28,14 @@ namespace CircuitBreaker.Test
         [Test]
         public async Task FailedFuncInvocation_ItShouldCallInvocationFails()
         {
-            await Invoker.InvokeThroughAsync(CurrentState, () => throw new Exception(), TimeSpan.FromMilliseconds(100));
+            await Invoker.InvokeThroughAsync(() => throw new Exception());
             CurrentState.Received().InvocationFails(Arg.Any<Exception>());
         }
 
         [Test]
         public async Task SuccessfulFuncInvocation_ItShouldCallInvocationFails()
         {
-            await Invoker.InvokeThroughAsync(CurrentState, () => Task.FromResult(false), TimeSpan.FromMilliseconds(100));
+            await Invoker.InvokeThroughAsync(() => Task.FromResult(false));
             CurrentState.Received().InvocationSucceeds();
         }
     }

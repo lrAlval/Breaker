@@ -5,9 +5,11 @@ namespace CircuitBreaker.States
 {
     public class OpenState : CircuitBreakerState
     {
-        public OpenState(CircuitBreaker circuitBreaker) : base(circuitBreaker) =>
-            new CircuitBreakerInvoker(CircuitBreaker.Settings.TaskScheduler)
-                .InvokeScheduled(() => CircuitBreaker.TripTo(new HalfOpenState(CircuitBreaker)), CircuitBreaker.Settings.ResetTimeOut);
+        public OpenState(CircuitBreaker circuitBreaker) : base(circuitBreaker)
+        {
+            new CircuitBreakerInvoker(this, CircuitBreaker.Settings.TaskScheduler, TimeSpan.Zero)
+                    .InvokeScheduled(() => CircuitBreaker.TripTo(new HalfOpenState(CircuitBreaker)), CircuitBreaker.Settings.ResetTimeOut);
+        }
 
         public override void OnEnter() => CircuitBreaker.SuccessCount = 0;
 
