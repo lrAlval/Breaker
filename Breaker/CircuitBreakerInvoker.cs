@@ -84,7 +84,7 @@ namespace CircuitBreaker
         private Task<T> Schedule<T>(Func<T> func, CancellationToken cancellationToken = default(CancellationToken))
             => Task.Factory.StartNew(func, cancellationToken, TaskCreationOptions.DenyChildAttach, _customTaskScheduler);
 
-        private Task Schedule(Action action, CancellationToken cancellationToken = default(CancellationToken))
+        private Task Schedule(Action action, CancellationToken cancellationToken = default)
             => Task.Factory.StartNew(action, cancellationToken, TaskCreationOptions.DenyChildAttach, _customTaskScheduler);
     }
 }

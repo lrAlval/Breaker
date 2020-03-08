@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2046
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CircuitBreaker", "CircuitBreaker\CircuitBreaker.csproj", "{FF9BE64E-AA54-4092-A0B8-EA086D0FF879}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Breaker", "Breaker\Breaker.csproj", "{FF9BE64E-AA54-4092-A0B8-EA086D0FF879}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CircuitBreaker.Test", "CircuitBreaker.Test\CircuitBreaker.Test.csproj", "{FBD8DC52-7551-4A72-AC24-EBE9DAF9525F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Breaker.Test", "Breaker.Test\Breaker.Test.csproj", "{FBD8DC52-7551-4A72-AC24-EBE9DAF9525F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
