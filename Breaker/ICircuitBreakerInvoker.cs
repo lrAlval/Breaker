@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace CircuitBreaker
+namespace Breaker.Core
 {
     interface ICircuitBreakerInvoker
     {

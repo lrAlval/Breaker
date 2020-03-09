@@ -259,3 +259,13 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+# BenchmarkDotNet Artifacts
+**/BenchmarkDotNet.Artifacts/*
+**/project.lock.json
+tests/output/*
+.vs/restore.dg
+artifacts/*
+BDN.Generated
+BenchmarkDotNet.Samples/Properties/launchSettings.json
+src/BenchmarkDotNet/Disassemblers/net461/*

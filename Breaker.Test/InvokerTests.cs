@@ -4,9 +4,9 @@ using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CircuitBreaker.Test.Fixtures;
+using Breaker.Core.Test.Fixtures;
 
-namespace CircuitBreaker.Test
+namespace Breaker.Core.Test
 {
     public class InvokeScheduledTests : InvokerTestFixture
     {
@@ -33,7 +33,7 @@ namespace CircuitBreaker.Test
         }
 
         [Test]
-        public async Task SuccessfulFuncInvocation_ItShouldCallInvocationFails()
+        public async Task SuccessfulFuncInvocation_ItShouldCallInvocationSuccess()
         {
             await Invoker.InvokeThroughAsync(() => Task.FromResult(false));
             CurrentState.Received().InvocationSucceeds();

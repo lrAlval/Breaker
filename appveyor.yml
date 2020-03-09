@@ -20,4 +20,3 @@ build_script:
 test:
 test_script:
   - dotnet test
-

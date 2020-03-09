@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Breaker.Core;
 
-namespace CircuitBreaker.States
+namespace Breaker.Core.States
 {
     public class OpenState : CircuitBreakerState
     {
-        public OpenState(CircuitBreaker circuitBreaker) : base(circuitBreaker)
-        {
-            new CircuitBreakerInvoker(this, CircuitBreaker.Settings.TaskScheduler, TimeSpan.Zero)
+        public OpenState(CircuitBreaker circuitBreaker) : base(circuitBreaker) =>
+            new CircuitBreakerInvoker(this, TimeSpan.Zero, CircuitBreaker.Settings.TaskScheduler)
                     .InvokeScheduled(() => CircuitBreaker.TripTo(new HalfOpenState(CircuitBreaker)), CircuitBreaker.Settings.ResetTimeOut);
-        }
 
         public override void OnEnter() => CircuitBreaker.SuccessCount = 0;
 

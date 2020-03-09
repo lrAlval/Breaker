@@ -2,9 +2,9 @@
 using NSubstitute;
 using NUnit.Framework;
 using System;
-using CircuitBreaker.Test.Fixtures;
+using Breaker.Core.Test.Fixtures;
 
-namespace CircuitBreaker.Test
+namespace Breaker.Core.Test
 {
     public class HalfOpenState : CircuitBreakerStateFixture
     {

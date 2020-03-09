@@ -1,10 +1,11 @@
 using System;
 using FluentAssertions;
 using System.Threading.Tasks;
-using CircuitBreaker.Test.Fixtures;
+using Breaker.Core.Test.Fixtures;
 using NUnit.Framework;
+using Breaker.Core;
 
-namespace CircuitBreaker.Test
+namespace Breaker.Core.Test
 {
     public class OpenState : CircuitBreakerStateFixture
     {

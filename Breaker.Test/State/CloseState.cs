@@ -1,11 +1,11 @@
 ﻿using System;
-using CircuitBreaker.States;
+using Breaker.Core.States;
 using FluentAssertions;
 using NSubstitute;
-using CircuitBreaker.Test.Fixtures;
+using Breaker.Core.Test.Fixtures;
 using NUnit.Framework;
 
-namespace CircuitBreaker.Test
+namespace Breaker.Core.Test
 {
     public class CloseState : CircuitBreakerStateFixture
     {

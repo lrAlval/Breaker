@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Breaker.Core;
 
-namespace CircuitBreaker
+namespace Breaker.Core
 {
     public static class Extensions
     {

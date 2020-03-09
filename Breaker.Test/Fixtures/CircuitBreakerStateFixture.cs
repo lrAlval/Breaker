@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace CircuitBreaker.Test.Fixtures
+namespace Breaker.Core.Test.Fixtures
 {
     [TestFixture]
     public abstract class CircuitBreakerStateFixture

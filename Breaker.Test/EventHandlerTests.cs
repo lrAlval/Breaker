@@ -1,11 +1,11 @@
-﻿using CircuitBreaker.Test.Fixtures;
+﻿using Breaker.Core.Test.Fixtures;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CircuitBreaker.Test
+namespace Breaker.Core.Test
 {
     public class EventNotifierTests : EventNotifierFixture
     {
@@ -14,7 +14,7 @@ namespace CircuitBreaker.Test
         {
             var raisedStates = new List<CircuitBreakerState>();
 
-            CircuitBreaker.OnStateChange += newState => raisedStates.Add(newState);
+            CircuitBreaker.Notifier.OnStateChange += newState => raisedStates.Add(newState);
 
             //Trigger two Failures to Trip to Open
             CircuitBreaker.Execute(() => throw new Exception());

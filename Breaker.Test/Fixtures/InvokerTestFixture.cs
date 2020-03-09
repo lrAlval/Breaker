@@ -3,7 +3,7 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 
-namespace CircuitBreaker.Test.Fixtures
+namespace Breaker.Core.Test.Fixtures
 {
     [TestFixture]
     public abstract class InvokerTestFixture
@@ -16,7 +16,7 @@ namespace CircuitBreaker.Test.Fixtures
         {
             var circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig());
             CurrentState = Substitute.For<CircuitBreakerState>(circuitBreaker);
-            Invoker = new CircuitBreakerInvoker(CurrentState, TaskScheduler.Default, TimeSpan.FromMilliseconds(80));
+            Invoker = new CircuitBreakerInvoker(CurrentState, TimeSpan.FromMilliseconds(80));
         }
     }
 }
