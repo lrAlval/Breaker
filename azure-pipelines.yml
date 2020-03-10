@@ -19,17 +19,23 @@ variables:
   versionEnvVar: 'GitVersion.SemVer'
   buildConfiguration: 'Release'
 
-steps:
-- task: UseGitVersion@5
-  displayName: gitversion
-  inputs:
-    versionSpec: '5.x'
-    updateAssemblyInfo: false
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration) -p:Version=$(versionEnvVar)'
-- task: DotNetCoreCLI@2
-  displayName: Unit tests
-  inputs:
-    command: test
-    projects: '**/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+# this pipeline has one implicit stage
+jobs:
+- job: Build
+  steps:
+    - task: UseGitVersion@5
+      displayName: semverion
+      inputs:
+        versionSpec: '5.x'
+        updateAssemblyInfo: false
+    - script: dotnet build --configuration $(buildConfiguration)
+      displayName: 'dotnet build $(buildConfiguration) -p:Version=$(versionEnvVar)'
+
+- job: Tests
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: Unit tests
+    inputs:
+      command: test
+      projects: '*Test.csproj'
+      arguments: '--configuration $(buildConfiguration)'
