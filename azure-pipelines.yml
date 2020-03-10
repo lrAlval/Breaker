@@ -24,7 +24,7 @@ steps:
   displayName: gitversion
   inputs:
     versionSpec: '5.x'
-    updateAssemblyInfo: true
+    updateAssemblyInfo: false
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration) -p:Version=$(versionEnvVar)'
 - task: DotNetCoreCLI@2
