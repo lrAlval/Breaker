@@ -2,13 +2,14 @@ language: csharp
 dist: xenial
 sudo: true
 mono: none
-dotnet: 2.1.503
 
 matrix:
   include:
     - stage: Build
+      dotnet: 3.1
       script: 
         - dotnet build   
     - stage: Unit Tests
+      dotnet: 3.1
       script:
         - dotnet test
