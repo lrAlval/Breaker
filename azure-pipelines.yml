@@ -6,7 +6,9 @@
 trigger:
   branches:
     include:
-    - '*' 
+    - develop
+    - release/*
+    - hotfix/*
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -17,25 +19,34 @@ variables:
   configuration: '$(buildConfiguration)'
   versioningScheme: byEnvVar
   versionEnvVar: 'GitVersion.SemVer'
+  projectToPackage: 'Breaker/Breaker.csproj'
   buildConfiguration: 'Release'
-
+  
 # this pipeline has one implicit stage
-jobs:
-- job: Build
-  steps:
-    - task: UseGitVersion@5
-      displayName: semverion
-      inputs:
-        versionSpec: '5.x'
-        updateAssemblyInfo: false
-    - script: dotnet build --configuration $(buildConfiguration)
-      displayName: 'dotnet build $(buildConfiguration) -p:Version=$(versionEnvVar)'
+steps:
+  - task: UseGitVersion@5
+    displayName: semverion
+    inputs:
+      versionSpec: '5.x'
+      updateAssemblyInfo: false
 
-- job: Tests
-  steps:
+  - task: DotNetCoreCLI@2 
+    displayName: 'dotnet build' 
+    inputs: 
+      command: build
+      arguments: '--configuration $(buildConfiguration) /p:Version=$(GitVersion.NuGetVersion)' 
+      versioningScheme: byBuildNumber
+
   - task: DotNetCoreCLI@2
     displayName: Unit tests
     inputs:
       command: test
-      projects: '*Test.csproj'
       arguments: '--configuration $(buildConfiguration)'
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet pack' 
+    inputs: 
+      command: pack
+      packagesToPack: '$(projectToPackage)'
+      versioningScheme: byEnvVar 
+      versionEnvVar: GitVersion.NuGetVersion
+      packDirectory: $(Build.ArtifactStagingDirectory)
