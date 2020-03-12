@@ -19,26 +19,41 @@ variables:
   configuration: '$(buildConfiguration)'
   projectToPackage: 'Breaker/Breaker.csproj'
   buildConfiguration: 'Release'
-
+  GitVersion.SemVer: ''
+  GitVersion.NuGetVersion: ''
+  
+# this pipeline has one implicit stage
 steps:
+  - task: UseGitVersion@5
+    inputs:
+      versionSpec: '5.x'
+      updateAssemblyInfo: false
+      verbosityPack: 'Minimal'
+
   - task: DotNetCoreCLI@2 
     displayName: 'Building' 
     inputs: 
       command: build
-      arguments: '--configuration $(buildConfiguration)' 
+      versioningScheme: byEnvVar
+      versionEnvVar: '$(GitVersion.SemVer)'
+      arguments: '--configuration $(buildConfiguration) /p:Version=$(GitVersion.SemVer)' 
+      verbosityPack: 'Minimal'
 
   - task: DotNetCoreCLI@2
     displayName: Executing Tests
     inputs:
       command: test
       arguments: '--configuration $(buildConfiguration)'
+      verbosityPack: 'Minimal'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Generating Artifact'
+    displayName: 'Generating Artifact' 
     inputs: 
       command: pack
       packagesToPack: '$(projectToPackage)'
       nobuild: true
+      versioningScheme: byEnvVar 
+      versionEnvVar: GitVersion.SemVer
       packDirectory: $(Build.ArtifactStagingDirectory)
       verbosityPack: 'Minimal'
 
