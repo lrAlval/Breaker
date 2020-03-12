@@ -1,0 +1,48 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  branches:
+    include:
+    - master
+    - develop
+    - release/*
+    - hotfix/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  command: build
+  projects: '$(solution)'
+  configuration: '$(buildConfiguration)'
+  projectToPackage: 'Breaker/Breaker.csproj'
+  buildConfiguration: 'Release'
+  GitVersion.SemVer: ''
+  GitVersion.NuGetVersion: ''
+  
+# this pipeline has one implicit stage
+steps:
+  - task: DotNetCoreCLI@2 
+    displayName: 'Build' 
+    inputs: 
+      command: build
+      versioningScheme: byEnvVar
+      versionEnvVar: '$(GitVersion.SemVer)'
+      arguments: '--configuration $(buildConfiguration)' 
+
+  - task: DotNetCoreCLI@2
+    displayName: Running Tests
+    inputs:
+      command: test
+      arguments: '--configuration $(buildConfiguration)'
+  - task: DotNetCoreCLI@2
+    displayName: 'Generating Artifact'
+    inputs: 
+      command: pack
+      packagesToPack: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+      versioningScheme: byEnvVar 
+      versionEnvVar: '$(GitVersion.SemVer)'
+      packDirectory: $(Build.ArtifactStagingDirectory)

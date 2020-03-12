@@ -7,12 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Breaker", "Breaker\Breaker.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Breaker.Test", "Breaker.Test\Breaker.Test.csproj", "{FBD8DC52-7551-4A72-AC24-EBE9DAF9525F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Breaker.Benchmarks", "Breaker.Benchmarks\Breaker.Benchmarks.csproj", "{434F9CF2-03FA-44CB-A538-AE283BB095D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Breaker.Benchmarks", "Breaker.Benchmarks\Breaker.Benchmarks.csproj", "{434F9CF2-03FA-44CB-A538-AE283BB095D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C86A2F53-EAA4-43C5-8D59-388AEBA2AF41}"
 	ProjectSection(SolutionItems) = preProject
-		.travis.yml = .travis.yml
-		appveyor.yml = appveyor.yml
+		azure-pipelines.yml = azure-pipelines.yml
 	EndProjectSection
 EndProject
 Global
