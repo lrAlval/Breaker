@@ -35,8 +35,9 @@ steps:
     displayName: 'dotnet build' 
     inputs: 
       command: build
-      arguments: '--configuration $(buildConfiguration) -p:Version=$(GitVersion.NuGetVersion)' 
-      versioningScheme: byBuildNumber
+      versioningScheme: byEnvVar
+      versionEnvVar: 'GitVersion.SemVer'
+      arguments: '--configuration $(buildConfiguration) -p:Version=$(GitVersion.SemVer)' 
 
   - task: DotNetCoreCLI@2
     displayName: Unit tests
