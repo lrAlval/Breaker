@@ -19,14 +19,15 @@ variables:
   projects: '$(solution)'
   configuration: '$(buildConfiguration)'
   versioningScheme: byEnvVar
-  versionEnvVar: 'GitVersion.SemVer'
   projectToPackage: 'Breaker/Breaker.csproj'
   buildConfiguration: 'Release'
+  GitVersion.SemVer: ''
+  GitVersion.NuGetVersion: ''
   
 # this pipeline has one implicit stage
 steps:
   - task: UseGitVersion@5
-    displayName: semverion
+    displayName: semversion
     inputs:
       versionSpec: '5.x'
       updateAssemblyInfo: false
@@ -35,7 +36,7 @@ steps:
     displayName: 'dotnet build' 
     inputs: 
       command: build
-      arguments: '--configuration $(buildConfiguration) /p:Version=$(GitVersion.NuGetVersion)' 
+      arguments: '--configuration $(buildConfiguration) -p:FileVersion=$(GitVersion.NuGetVersion)  -p:Version=$(GitVersion.NuGetVersion)' 
       versioningScheme: byBuildNumber
 
   - task: DotNetCoreCLI@2
@@ -49,5 +50,5 @@ steps:
       command: pack
       packagesToPack: '$(projectToPackage)'
       versioningScheme: byEnvVar 
-      versionEnvVar: GitVersion.NuGetVersion
+      versionEnvVar: '$(GitVersion.NuGetVersion)'
       packDirectory: $(Build.ArtifactStagingDirectory)
