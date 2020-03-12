@@ -15,34 +15,35 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  command: build
   projects: '$(solution)'
   configuration: '$(buildConfiguration)'
   projectToPackage: 'Breaker/Breaker.csproj'
   buildConfiguration: 'Release'
-  GitVersion.SemVer: ''
-  GitVersion.NuGetVersion: ''
-  
-# this pipeline has one implicit stage
+
 steps:
   - task: DotNetCoreCLI@2 
-    displayName: 'Build' 
+    displayName: 'Building' 
     inputs: 
       command: build
-      versioningScheme: byEnvVar
-      versionEnvVar: '$(GitVersion.SemVer)'
       arguments: '--configuration $(buildConfiguration)' 
 
   - task: DotNetCoreCLI@2
-    displayName: Running Tests
+    displayName: Executing Tests
     inputs:
       command: test
       arguments: '--configuration $(buildConfiguration)'
+
   - task: DotNetCoreCLI@2
     displayName: 'Generating Artifact'
     inputs: 
       command: pack
-      packagesToPack: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
-      versioningScheme: byEnvVar 
-      versionEnvVar: '$(GitVersion.SemVer)'
+      packagesToPack: '$(projectToPackage)'
+      nobuild: true
       packDirectory: $(Build.ArtifactStagingDirectory)
+      verbosityPack: 'Minimal'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'NuGetPackage'
+        publishLocation: 'Container'

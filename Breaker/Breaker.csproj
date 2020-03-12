@@ -5,11 +5,16 @@
     <LangVersion>latest</LangVersion>
     <Authors>Robert Alva</Authors>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="GitVersionTask" Version="5.2.0">
+    <PackageReference Include="MinVer" Version="2.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <PropertyGroup>
+    <MinVerSkip Condition="'$(Configuration)' == 'Debug'">true</MinVerSkip>
+  </PropertyGroup>
+  
 </Project>
