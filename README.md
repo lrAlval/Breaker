@@ -1,6 +1,7 @@
 # Breaker.Net
 ## Build status
 [![Build Status](https://dev.azure.com/lPersonall/Open%20Source%20Projects/_apis/build/status/lrAlval.Breaker?branchName=develop)](https://dev.azure.com/lPersonall/Open%20Source%20Projects/_build/latest?definitionId=1&branchName=develop)
+ [![NuGet version](https://badge.fury.io/nu/Breaker.svg)](https://badge.fury.io/nu/Breaker)
 ## Overview
 
 `Breaker.Net` is an implementation of the Circuit Breaker pattern for .NET with zero dependencies.
