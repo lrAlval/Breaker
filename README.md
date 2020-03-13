@@ -46,7 +46,7 @@ There are [not so many of them][nuget-curcuitbreaker]. I didn't find any that wo
 
 ## Roadmap
 
- - Publish to Nuget
+ - ~~Publish to Nuget.~~ 
  - Adding more events to easily integrate with any analytics platform
  - Added some container support 
 
