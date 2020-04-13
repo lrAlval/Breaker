@@ -1,8 +1,8 @@
-﻿using Breaker.Events;
-using Breaker.Core.States;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Breaker.Core.States;
+using Breaker.Events;
 
 namespace Breaker.Core
 {
@@ -52,12 +52,12 @@ namespace Breaker.Core
             return false;
         }
 
-        public void Execute(Action action) => _currentState.Execute(action.ThrowIfNull(nameof(action)));
+        public void Execute(Action action) => _currentState.Execute(action);
 
-        public T Execute<T>(Func<T> func) => _currentState.Execute(func.ThrowIfNull(nameof(func)));
+        public T Execute<T>(Func<T> func) => _currentState.Execute(func);
 
-        public Task ExecuteAsync(Func<Task> func) => _currentState.ExecuteAsync(func.ThrowIfNull(nameof(func)));
+        public Task ExecuteAsync(Func<Task> func) => _currentState.ExecuteAsync(func);
 
-        public Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _currentState.ExecuteAsync(func.ThrowIfNull(nameof(func)));
+        public Task<T> ExecuteAsync<T>(Func<Task<T>> func) => _currentState.ExecuteAsync(func);
     }
 }
