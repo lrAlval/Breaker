@@ -9,9 +9,6 @@ namespace Breaker.Core
         private readonly CircuitBreakerState _currentState;
         private readonly CustomTaskFactory _taskFactory;
 
-        private readonly TaskScheduler _customTaskScheduler;
-        private readonly TimeSpan _timeout;
-
         public CircuitBreakerInvoker(CircuitBreakerState state, TimeSpan serviceTimeout, TaskScheduler taskScheduler = null)
         {
             _currentState = state;
