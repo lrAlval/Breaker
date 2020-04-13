@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Breaker.Utils;
 
@@ -8,14 +7,12 @@ namespace Breaker.Core
     public class CircuitBreakerInvoker : ICircuitBreakerInvoker
     {
         private readonly CircuitBreakerState _currentState;
-        private readonly TaskScheduler _customTaskScheduler;
-        private readonly TimeSpan _timeout;
+        private readonly CustomTaskFactory _taskFactory;
 
-        public CircuitBreakerInvoker(CircuitBreakerState state, TimeSpan timeout, TaskScheduler taskScheduler = null)
+        public CircuitBreakerInvoker(CircuitBreakerState state, TimeSpan serviceTimeout, TaskScheduler taskScheduler = null)
         {
             _currentState = state;
-            _customTaskScheduler = taskScheduler ?? TaskScheduler.Default;
-            _timeout = timeout;
+            _taskFactory = new CustomTaskFactory(serviceTimeout, taskScheduler);
         }
 
         public void InvokeScheduled(Action onTimeInterval, TimeSpan interval) => DisposableSelfTimer.Execute(onTimeInterval, interval);
@@ -24,7 +21,7 @@ namespace Breaker.Core
         {
             try
             {
-                Invoke(action);
+                _taskFactory.Run(action);
 
                 _currentState.InvocationSucceeds();
             }
@@ -38,7 +35,7 @@ namespace Breaker.Core
         {
             try
             {
-                var result = Invoke(func);
+                var result = _taskFactory.Run(func).GetAwaiter().GetResult();
 
                 _currentState.InvocationSucceeds();
 
@@ -56,7 +53,7 @@ namespace Breaker.Core
         {
             try
             {
-                await InvokeAsync(func);
+                await _taskFactory.Run(func);
 
                 _currentState.InvocationSucceeds();
             }
@@ -75,7 +72,7 @@ namespace Breaker.Core
         {
             try
             {
-                var result = await InvokeAsync(func);
+                var result = await _taskFactory.Run(func);
 
                 _currentState.InvocationSucceeds();
 
@@ -86,34 +83,6 @@ namespace Breaker.Core
                 _currentState.InvocationFails(e);
 
                 return await Task.FromException<T>(e);
-            }
-        }
-
-        private void Invoke(Action action) => Schedule(action).Wait();
-
-        private T Invoke<T>(Func<T> func) => Schedule(func).GetAwaiter().GetResult();
-
-        private Task InvokeAsync(Func<Task> func) => Schedule(func).Unwrap();
-
-        private Task<T> InvokeAsync<T>(Func<Task<T>> func) => Schedule(func).Unwrap();
-
-        private Task<T> Schedule<T>(Func<T> func)
-        {
-            using (var cts = new CancellationTokenSource())
-            {
-                cts.CancelAfter(_timeout);
-
-                return Task.Factory.StartNew(func, cts.Token, TaskCreationOptions.DenyChildAttach, _customTaskScheduler);
-            }
-        }
-
-        private Task Schedule(Action action)
-        {
-            using (var cts = new CancellationTokenSource())
-            {
-                cts.CancelAfter(_timeout);
-
-                return Task.Factory.StartNew(action, cts.Token, TaskCreationOptions.DenyChildAttach, _customTaskScheduler);
             }
         }
     }
