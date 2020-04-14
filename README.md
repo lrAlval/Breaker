@@ -5,7 +5,7 @@
  
 ## Overview
 
-`Breaker.Net` is an implementation of the Circuit Breaker pattern for .NET with zero dependencies.
+`Breaker` is an implementation of the Circuit Breaker pattern for .NET with zero dependencies.
 
 This pattern can help you monitor the performance of a remote resource and improve the stability and resilience of your application by isolating the communication with third-party services, so that your application won't be affected by their fails.
  
