@@ -1,0 +1,42 @@
+assembly-versioning-scheme: MajorMinorPatch
+mode: Mainline
+next-version: 1.0.0
+
+branches:
+  master:
+    mode: ContinuousDeployment
+    regex: master
+    tag: ''
+    increment: Patch
+    is-source-branch-for: ['beta', 'feature']
+    is-mainline: true
+
+  beta:
+    mode: ContinuousDeployment
+    regex: ^release/beta/.*
+    tag: beta
+    increment: none
+    source-branches: ['master']
+
+  dev:
+    mode: ContinuousDeployment
+    regex: ^dev/.*?/(.*?)
+    tag: dev.{BranchName}
+    source-branches: ['master', 'release']
+    increment: none
+
+  feature:
+    tag: feature.{BranchName}
+    regex: ^feature/(.*?)
+    source-branches: ['master']
+    increment: none
+
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    mode: ContinuousDeployment
+    tag: 'PullRequest'
+    tag-number-pattern: '[/-](?<number>\d+)[-/]'
+    increment: Inherit
+
+ignore:
+  sha: []
