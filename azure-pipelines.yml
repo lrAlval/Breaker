@@ -27,6 +27,8 @@ steps:
     inputs:
       versionSpec: '5.x'
       updateAssemblyInfo: false
+      useConfigFile: true
+      configFilePath: gitversion.yml
 
   - task: DotNetCoreCLI@2 
     displayName: 'Building' 
@@ -42,15 +44,16 @@ steps:
     inputs:
       command: test
       arguments: '--configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
+      projects: 'Breaker.Test/*.csproj'
       nobuild: true
       verbosityPack: 'Minimal'
 
   - task: reportgenerator@4
     displayName: Generating Report
     inputs:
-      reports: '$(Build.SourcesDirectory)/tests/**/coverage.cobertura.xml'
+      reports: '$(Build.SourcesDirectory)/Breaker.Test/coverage.cobertura.xml'
       targetdir: '$(Build.SourcesDirectory)/CodeCoverage'
-      reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
+      reporttypes: 'Cobertura;Badges'
       assemblyfilters: '-nunit*'
 
   - task: PublishCodeCoverageResults@1
