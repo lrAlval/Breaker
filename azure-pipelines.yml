@@ -34,6 +34,7 @@ steps:
     displayName: 'Building' 
     inputs: 
       command: build
+      projects: '$(projectToPackage)'
       versioningScheme: byEnvVar
       versionEnvVar: '$(GitVersion.SemVer)'
       arguments: '--configuration $(buildConfiguration) /p:Version=$(GitVersion.SemVer)' 
@@ -45,7 +46,6 @@ steps:
       command: test
       arguments: '--configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
       projects: 'Breaker.Test/*.csproj'
-      nobuild: true
       verbosityPack: 'Minimal'
 
   - task: reportgenerator@4
