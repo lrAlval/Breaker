@@ -11,7 +11,7 @@ trigger:
     - hotfix/*
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
   projects: '$(solution)'
@@ -41,16 +41,25 @@ steps:
     displayName: Executing Tests
     inputs:
       command: test
-      arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
+      arguments: -c $(buildConfiguration) --settings $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
       verbosityPack: 'Minimal'
 
-  - script: dotnet test --logger trx --collect "Code coverage"
-  - task: PublishTestResults@2
-    displayName: Collecting Coverage Report
+  - task: DotNetCoreCLI@2
+    displayName: Installing ReportGenerator tool
     inputs:
-      testRunner: NUnit
-      testResultsFiles: '**/*.trx'
+      command: custom
+      custom: tool
+      arguments: install --tool-path . dotnet-reportgenerator-globaltool
 
+  - script: ./reportgenerator -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/coverlet/reports -reporttypes:"Cobertura"
+    displayName: Creating reports
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publishing code coverage'
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml  
+    
   - task: DotNetCoreCLI@2
     displayName: 'Generating Artifact' 
     inputs: 
