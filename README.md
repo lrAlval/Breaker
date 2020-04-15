@@ -2,6 +2,9 @@
 ## Build status
 [![Build Status](https://dev.azure.com/lPersonall/Open%20Source%20Projects/_apis/build/status/lrAlval.Breaker?branchName=master)](https://dev.azure.com/lPersonall/Open%20Source%20Projects/_build/latest?definitionId=1&branchName=master)
 [![NuGet version](https://badge.fury.io/nu/Breaker.svg)](https://badge.fury.io/nu/Breaker)
+[![NuGet version](https://badge.fury.io/nu/Breaker.svg)](https://badge.fury.io/nu/Breaker)
+![coverage](https://img.shields.io/azure-devops/coverage/lPersonall/Open%20Source%20Projects/4)
+
  
 ## Overview
 
