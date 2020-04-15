@@ -260,6 +260,9 @@ paket-files/
 __pycache__/
 *.pyc
 
+#CoverageReports
+**/*.cobertura.xml
+
 # BenchmarkDotNet Artifacts
 **/BenchmarkDotNet.Artifacts/*
 **/project.lock.json

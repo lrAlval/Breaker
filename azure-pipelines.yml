@@ -41,25 +41,25 @@ steps:
     displayName: Executing Tests
     inputs:
       command: test
-      arguments: -c $(buildConfiguration) --settings $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
+      arguments: '--configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
+      nobuild: true
       verbosityPack: 'Minimal'
 
-  - task: DotNetCoreCLI@2
-    displayName: Installing ReportGenerator tool
+  - task: reportgenerator@4
+    displayName: Generating Report
     inputs:
-      command: custom
-      custom: tool
-      arguments: install --tool-path . dotnet-reportgenerator-globaltool
-
-  - script: ./reportgenerator -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/coverlet/reports -reporttypes:"Cobertura"
-    displayName: Creating reports
+      reports: '$(Build.SourcesDirectory)/tests/**/coverage.cobertura.xml'
+      targetdir: '$(Build.SourcesDirectory)/CodeCoverage'
+      reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
+      assemblyfilters: '-nunit*'
 
   - task: PublishCodeCoverageResults@1
-    displayName: 'Publishing code coverage'
+    displayName: 'Publish code coverage'
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml  
-    
+      summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
+      reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
+
   - task: DotNetCoreCLI@2
     displayName: 'Generating Artifact' 
     inputs: 
@@ -67,7 +67,7 @@ steps:
       packagesToPack: '$(projectToPackage)'
       arguments: '--configuration $(buildConfiguration)'
       nobuild: true
-      versioningScheme: byEnvVar 
+      versioningScheme: byEnvVar
       versionEnvVar: GitVersion.SemVer
       packDirectory: $(Build.ArtifactStagingDirectory)
       verbosityPack: 'Minimal'
