@@ -11,7 +11,7 @@ trigger:
     - hotfix/*
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 variables:
   projects: '$(solution)'
@@ -27,7 +27,6 @@ steps:
     inputs:
       versionSpec: '5.x'
       updateAssemblyInfo: false
-      verbosityPack: 'Minimal'
 
   - task: DotNetCoreCLI@2 
     displayName: 'Building' 
@@ -42,14 +41,22 @@ steps:
     displayName: Executing Tests
     inputs:
       command: test
-      arguments: '--configuration $(buildConfiguration)'
+      arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
       verbosityPack: 'Minimal'
+
+  - script: dotnet test --logger trx --collect "Code coverage"
+  - task: PublishTestResults@2
+    displayName: Collecting Coverage Report
+    inputs:
+      testRunner: NUnit
+      testResultsFiles: '**/*.trx'
 
   - task: DotNetCoreCLI@2
     displayName: 'Generating Artifact' 
     inputs: 
       command: pack
       packagesToPack: '$(projectToPackage)'
+      arguments: '--configuration $(buildConfiguration)'
       nobuild: true
       versioningScheme: byEnvVar 
       versionEnvVar: GitVersion.SemVer
